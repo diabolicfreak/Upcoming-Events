@@ -142,4 +142,43 @@ class Vcs_Upcoming_Events_Admin {
 
          register_post_type( 'event', $args );
      }
+
+     /**
+      * Add event info meta box
+      */
+     public function vcs_add_event_info_metabox()
+     {
+         add_meta_box(
+             'vcs-event-info-metabox',
+             __('Event Info', 'vcs-event'),
+             'vcs_render_event_info_metabox',
+             'event',
+             'side',
+             'core'
+         );
+     }
+    //  add_action('add_meta_boxes', 'vcs_add_event_info_metabox');
+    //  Callback to display event info metabox
+     function vcs_render_event_info_metabox($post)
+     {
+         wp_nonce_field(basename(__FILE__), 'vcs-event-info-nonce');
+
+         $event_start_date = get_post_meta($post->ID, 'event-start-date', true);
+         $event_end_date = get_post_meta($post->ID, 'event-end-date', true);
+         $event_venue = get_post_meta($post->ID, 'event-venue', true);
+
+         $event_start_date = !empty($event_start_date) ? $event_start_date : time();
+         $event_end_date = !empty($event_end_date) ? $event_end_date : $event_start_date;
+         ?>
+         <label for="vcs-event-start-date"><?php _e('Event Start Date:', 'vcs-event')?></label>
+         <input type="text" class="widefat uep-event-date-input" id="vcs-event-start-date" name="vcs-event-start-date" placeholder="Format: February 18, 2014" value="<?php echo date('F, d, Y', $event_start_date);?>" />
+
+         <label for="vcs-event-end-date"><?php _e('Event End Date:', 'vcs-event')?></label>
+         <input type="text" class="widefat uep-event-date-input" id="vcs-event-end-date" name="vcs-event-end-date" placeholder="Format: February 18, 2014" value="<?php echo date('F, d, Y', $event_start_date);?>">
+
+         <label for="vcs-event-venue"><?php _e('Event Venue:', 'vcs-event');?></label>
+         <input type="text" class="widefat" id="vcs-event-venue" name="vcs-event-venue" placeholder="eg. Times Squrare" value="<?php echo $event_venue; ?>">
+         <?php
+     }
+
  }
