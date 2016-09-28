@@ -64,7 +64,7 @@ class Vcs_Upcoming_Events_Admin {
 	 *
 	 * @since    1.0.0
 	 */
-	public function enqueue_styles() {
+	public function enqueue_styles($hook) {
 
 		/**
 		 * This function is provided for demonstration purposes only.
@@ -77,7 +77,10 @@ class Vcs_Upcoming_Events_Admin {
 		 * between the defined hooks and the functions defined in this
 		 * class.
 		 */
-
+		if('post.php' == $hook || 'post-new.php' == $hook){
+            wp_enqueue_style('jquery-ui-calendar', plugin_dir_url(__FILE__).'css/jquery-ui.min.css', array(), $this->version, 'all');
+            var_dump('calender style enq');
+        }
 		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/vcs-upcoming-events-admin.css', array(), $this->version, 'all' );
 
 	}
@@ -87,7 +90,7 @@ class Vcs_Upcoming_Events_Admin {
 	 *
 	 * @since    1.0.0
 	 */
-	public function enqueue_scripts() {
+	public function enqueue_scripts($hook) {
 
 		/**
 		 * This function is provided for demonstration purposes only.
@@ -100,8 +103,12 @@ class Vcs_Upcoming_Events_Admin {
 		 * between the defined hooks and the functions defined in this
 		 * class.
 		 */
+		if('post.php'==$hook || 'post-new.php'==$hook){
+            wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/vcs-upcoming-events-admin.js', array( 'jquery', 'jquery-ui-datepicker' ), $this->version, false );
+            var_dump('vcs-upcoming-events-admin enq');
+        }
+        var_dump($hook);
 
-		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/vcs-upcoming-events-admin.js', array( 'jquery' ), $this->version, false );
 
 	}
 
@@ -151,7 +158,7 @@ class Vcs_Upcoming_Events_Admin {
          add_meta_box(
              'vcs-event-info-metabox',
              __('Event Info', 'vcs-event'),
-             'vcs_render_event_info_metabox',
+             array($this, 'vcs_render_event_info_metabox'),
              'event',
              'side',
              'core'
@@ -159,7 +166,7 @@ class Vcs_Upcoming_Events_Admin {
      }
     //  add_action('add_meta_boxes', 'vcs_add_event_info_metabox');
     //  Callback to display event info metabox
-     function vcs_render_event_info_metabox($post)
+    public function vcs_render_event_info_metabox($post)
      {
          wp_nonce_field(basename(__FILE__), 'vcs-event-info-nonce');
 

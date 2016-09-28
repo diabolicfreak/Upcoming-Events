@@ -28,5 +28,19 @@
 	 * Although scripts in the WordPress core, Plugins and Themes may be
 	 * practising this, we should strive to set a better example in our own work.
 	 */
+     $(function(){
+         $('#vcs-event-start-date').datepicker({
+            dateFormat: 'MM dd, yy',
+            onClose: function(selectedDate){
+                $('#vcs-event-end-date').datepicker('option', 'minDate', selectedDate);
+            }
+         });
+         $('#vcs-event-end-date').datepicker({
+             dateFormat: 'MM dd, yy',
+             onClose: function(selectedDate){
+                 $('#vcs-event-start-date').datepicker('option', 'maxDate', selectedDate);
+             }
+         });
+     })
 
 })( jQuery );
