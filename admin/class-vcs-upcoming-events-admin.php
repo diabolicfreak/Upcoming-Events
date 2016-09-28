@@ -79,7 +79,6 @@ class Vcs_Upcoming_Events_Admin {
 		 */
 		if('post.php' == $hook || 'post-new.php' == $hook){
             wp_enqueue_style('jquery-ui-calendar', plugin_dir_url(__FILE__).'css/jquery-ui.min.css', array(), $this->version, 'all');
-            var_dump('calender style enq');
         }
 		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/vcs-upcoming-events-admin.css', array(), $this->version, 'all' );
 
@@ -105,9 +104,7 @@ class Vcs_Upcoming_Events_Admin {
 		 */
 		if('post.php'==$hook || 'post-new.php'==$hook){
             wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/vcs-upcoming-events-admin.js', array( 'jquery', 'jquery-ui-datepicker' ), $this->version, false );
-            var_dump('vcs-upcoming-events-admin enq');
         }
-        var_dump($hook);
 
 
 	}
@@ -164,7 +161,7 @@ class Vcs_Upcoming_Events_Admin {
              'core'
          );
      }
-    //  add_action('add_meta_boxes', 'vcs_add_event_info_metabox');
+
     //  Callback to display event info metabox
     public function vcs_render_event_info_metabox($post)
      {
@@ -181,11 +178,41 @@ class Vcs_Upcoming_Events_Admin {
          <input type="text" class="widefat uep-event-date-input" id="vcs-event-start-date" name="vcs-event-start-date" placeholder="Format: February 18, 2014" value="<?php echo date('F, d, Y', $event_start_date);?>" />
 
          <label for="vcs-event-end-date"><?php _e('Event End Date:', 'vcs-event')?></label>
-         <input type="text" class="widefat uep-event-date-input" id="vcs-event-end-date" name="vcs-event-end-date" placeholder="Format: February 18, 2014" value="<?php echo date('F, d, Y', $event_start_date);?>">
+         <input type="text" class="widefat uep-event-date-input" id="vcs-event-end-date" name="vcs-event-end-date" placeholder="Format: February 18, 2014" value="<?php echo date('F, d, Y', $event_end_date);?>">
 
          <label for="vcs-event-venue"><?php _e('Event Venue:', 'vcs-event');?></label>
-         <input type="text" class="widefat" id="vcs-event-venue" name="vcs-event-venue" placeholder="eg. Times Squrare" value="<?php echo $event_venue; ?>">
+         <input type="text" class="widefat" id="vcs-event-venue" name="vcs-event-venue" placeholder="eg. Times Squrare" value="<?php echo $event_venue;?>">
          <?php
+     }
+
+    //  Callback to save event post
+     public function vcs_save_event_info($post_id){
+        //  Check if post is of type event
+         if('event'!=$_POST['post_type']){
+             return;
+         }
+
+        //  Check save status and nonce validity
+         $is_autosave = wp_is_post_autosave($post_id);
+         $is_revision = wp_is_post_revision($post_id);
+         $is_valid_nonce = ( isset($_POST['vcs-event-info-nonce']) && (wp_verify_nonce($_POST['vcs-event-info-nonce'], basename(__FILE__)))) ? true :false;
+
+         if($is_autosave || $is_revision || !$is_valid_nonce){
+             return;
+         }
+
+        //  Updating/saving post meta values
+         if(isset($_POST['vcs-event-start-date'])){
+             update_post_meta($post_id, 'event-start-date', strtotime($_POST['vcs-event-start-date']));
+         }
+
+         if(isset($_POST['vcs-event-end-date'])){
+             update_post_meta($post_id, 'event-end-date', strtotime($_POST['vcs-event-end-date']));
+         }
+
+         if(isset($_POST['vcs-event-venue'])){
+             update_post_meta($post_id, 'event-venue', sanitize_text_field($_POST['vcs-event-venue']));
+         }
      }
 
  }

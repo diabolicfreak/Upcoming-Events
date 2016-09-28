@@ -156,7 +156,7 @@ class Vcs_Upcoming_Events {
 
 		$this->loader->add_action( 'init', $plugin_admin, 'vcs_event_custom_post_type' );
 		$this->loader->add_action( 'add_meta_boxes', $plugin_admin, 'vcs_add_event_info_metabox' );
-
+        $this->loader->add_action( 'save_post', $plugin_admin, 'vcs_save_event_info' );
 	}
 
 	/**
