@@ -188,9 +188,13 @@ class Vcs_Upcoming_Events_Admin {
     //  Callback to save event post
      public function vcs_save_event_info($post_id){
         //  Check if post is of type event
-         if('event'!=$_POST['post_type']){
+        //  if($_POST['post_type']) && 'event'!=$_POST['post_type']){
+        //      return;
+        //  }
+         if(!is_singular( 'post_type' )){
              return;
          }
+
 
         //  Check save status and nonce validity
          $is_autosave = wp_is_post_autosave($post_id);
@@ -214,5 +218,37 @@ class Vcs_Upcoming_Events_Admin {
              update_post_meta($post_id, 'event-venue', sanitize_text_field($_POST['vcs-event-venue']));
          }
      }
+
+     /**
+      * Adding custom columsn to post admin
+      */
+    //  Set column headers
+     public function vcs_custom_columns_head($defaults){
+         unset($defaults['date']);
+
+         $defaults['event_start_date'] = __('Start Date', 'vcs-event');
+         $defaults['event_end_date'] = __('End Date', 'vcs-event');
+         $defaults['event_venue'] = __('Venue', 'vcs-event');
+
+         return $defaults;
+     }
+
+    // Set column values
+    public function vcs_custom_columns_content($column_name, $post_id){
+        if('event_start_date' == $column_name){
+            $start_date = get_post_meta($post_id, 'event-start-date', true);
+            echo date('F d, Y', $start_date);
+        }
+
+        if('event_end_date' == $column_name){
+            $end_date = get_post_meta($post_id, 'event-start-date', true);
+            echo date('F d, Y', $end_date);
+        }
+
+        if('event_venue' == $column_name){
+            $event_venue = get_post_meta($post_id, 'event-venue', true);
+            echo $event_venue;
+        }
+    }
 
  }

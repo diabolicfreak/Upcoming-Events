@@ -157,6 +157,9 @@ class Vcs_Upcoming_Events {
 		$this->loader->add_action( 'init', $plugin_admin, 'vcs_event_custom_post_type' );
 		$this->loader->add_action( 'add_meta_boxes', $plugin_admin, 'vcs_add_event_info_metabox' );
         $this->loader->add_action( 'save_post', $plugin_admin, 'vcs_save_event_info' );
+        $this->loader->add_filter( 'manage_edit-event_columns', $plugin_admin, 'vcs_custom_columns_head', 10 );
+        $this->loader->add_action( 'manage_event_posts_custom_column', $plugin_admin, 'vcs_custom_columns_content', 10, 2 );
+
 	}
 
 	/**
