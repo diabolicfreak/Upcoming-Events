@@ -30,7 +30,9 @@ class Vcs_Upcoming_Events_Activator {
 	 * @since    1.0.0
 	 */
 	public static function activate() {
-
+        require_once plugin_dir_path( __FILE__ ) . '../admin/partials/vcs-upcoming-events-admin-register-post-type.php';
+        register_post_type_external();
+        flush_rewrite_rules();
 	}
 
 }

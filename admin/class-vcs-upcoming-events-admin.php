@@ -20,6 +20,9 @@
  * @subpackage Vcs_Upcoming_Events/admin
  * @author     Vivek C S <diabolicfreak@gmail.com>
  */
+
+require_once plugin_dir_path( __FILE__ ) . 'partials/vcs-upcoming-events-admin-register-post-type.php';
+
 class Vcs_Upcoming_Events_Admin {
 
 	/**
@@ -112,39 +115,8 @@ class Vcs_Upcoming_Events_Admin {
     /**
      * Register custom post type 'Event'
      */
-
      public function vcs_event_custom_post_type() {
-         $labels = array(
-             'name'                  =>   __( 'Events', 'vcs-event' ),
-             'singular_name'         =>   __( 'Event', 'vcs-event' ),
-             'add_new_item'          =>   __( 'Add New Event', 'vcs-event' ),
-             'all_items'             =>   __( 'All Events', 'vcs-event' ),
-             'edit_item'             =>   __( 'Edit Event', 'vcs-event' ),
-             'new_item'              =>   __( 'New Event', 'vcs-event' ),
-             'view_item'             =>   __( 'View Event', 'vcs-event' ),
-             'not_found'             =>   __( 'No Events Found', 'vcs-event' ),
-             'not_found_in_trash'    =>   __( 'No Events Found in Trash', 'vcs-event' )
-         );
-
-         $supports = array(
-             'title',
-             'editor',
-             'excerpt'
-         );
-
-         $args = array(
-             'label'         =>   __( 'Events', 'vcs-event' ),
-             'labels'        =>   $labels,
-             'description'   =>   __( 'A list of upcoming events', 'vcs-event' ),
-             'public'        =>   true,
-             'show_in_menu'  =>   true,
-             'menu_icon'     =>   'dashicons-book',
-             'has_archive'   =>   true,
-             'rewrite'       =>   true,
-             'supports'      =>   $supports
-         );
-
-         register_post_type( 'event', $args );
+         register_post_type_external();
      }
 
      /**
@@ -251,4 +223,119 @@ class Vcs_Upcoming_Events_Admin {
         }
     }
 
+    // Register events widget
+    public function vcs_register_widget(){
+        register_widget('Upcoming_widget');
+    }
+
+ }
+
+/**
+ * Upcoming Widgets class definition
+ */
+ class Upcoming_widget extends WP_Widget {
+     public function __construct()
+     {
+         $widget_ops = array(
+             'class' => 'vcs_upcoming_events',
+             'description' => __('A widget to show all upcoming widgets', 'vcs-event')
+         );
+
+         parent::__construct(
+             'vcs_upcoming_events',
+             __('Upcoming events', 'vcs-event'),
+             $widget_ops
+         );
+     }
+
+     public function form($instance)
+     {
+         $widget_defaults = array(
+                 'title' => 'Upcoming events',
+                 'number_events' => 5
+         );
+
+         $instance = wp_parse_args((array) $instance, $widget_defaults);
+         ?>
+             <p>
+                 <label for="<?php echo $this->get_field_id('title');?>"><?php _e('Title', 'vcs-event')?></label>
+                 <input type="text" id="<?php echo $this->get_field_id('title')?>" name="<?php echo $this->get_field_name('title')?>" class="widefat" value="<?php echo esc_attr($instance['title']);?>">
+             </p>
+             <p>
+                 <label for="<?php echo $this->get_field_id('number_events')?>"><?php echo _e('Number of events to show', 'vcs-event')?></label>
+                 <select class="widefat" name="<?php echo $this->get_field_name('number_events')?>">
+                     <?php
+                         for($i=1; $i<=10; $i++):?>
+                             <option value="<?php echo $i;?>" <?php selected($i, $instance['number_events'], true);?>><?php echo $i;?></option>
+                     <?php endfor;?>
+                 </select>
+             </p>
+         <?php
+
+     }
+
+     public function update($new_instance, $old_instance)
+     {
+         $instance = $old_instance;
+
+         $instance['title'] = $new_instance['title'];
+         $instance['number_events'] = $new_instance['number_events'];
+
+         return $instance;
+     }
+
+     public function widget($args, $instance)
+     {
+         extract($args);
+         $title = apply_filters('widget_title', $instance['title']);
+
+         // Query event post details
+         $met_quer_args = array(
+             'relation' => 'AND',
+             array(
+                 'key' => 'event-end-date',
+                 'value' => time(),
+                 'compare' => '>='
+             )
+         );
+
+         $query_args = array(
+             'post_type' => 'event',
+             'posts_per_page' => $instance,
+             'post_status' => 'publish',
+             'ignore_sticky_posts' => true,
+             'meta_key' => 'event-start-date',
+             'orderby' => 'meta_value_num',
+             'order' => 'ASC',
+             'meta_query' => $met_quer_args
+         );
+         $upcoming_events = new WP_Query($query_args);
+
+         // Output Widget
+         echo $before_widget;
+         if($title){
+             echo $before_title.$title.$after_title;
+         }
+         ?>
+         <ul>
+             <?php
+                 while ($upcoming_events->have_posts()): $upcoming_events->the_post();
+                     $event_start_date = get_post_meta(get_the_ID(), 'event-start-date', true);
+                     $event_end_date = get_post_meta(get_the_ID(), 'event-end-date', true);
+                     $event_venue = get_post_meta(get_the_ID(), 'event-venue', true);
+              ?>
+              <li>
+                  <h4><a href="<?php the_permalink()?>" class="vcs_event_title"><?php the_title();?></a><span class="event_venue">at <?php echo $event_venue; ?></span></h4>
+                  <?php the_excerpt(); ?>
+                  <time class="vcs_event_date"><?php echo date('F d, Y', $event_start_date); ?> &ndash; <?php echo date('F f, Y', $event_end_date); ?></time>
+              </li>
+          <?php endwhile; ?>
+         </ul>
+
+         <a href="<?php echo get_post_type_archive_link('event')?>">View All Events</a>
+
+         <?php
+         wp_reset_query();
+         echo $after_widget;
+     }
  }

@@ -159,6 +159,8 @@ class Vcs_Upcoming_Events {
         $this->loader->add_action( 'save_post', $plugin_admin, 'vcs_save_event_info' );
         $this->loader->add_filter( 'manage_edit-event_columns', $plugin_admin, 'vcs_custom_columns_head', 10 );
         $this->loader->add_action( 'manage_event_posts_custom_column', $plugin_admin, 'vcs_custom_columns_content', 10, 2 );
+        // Initialize widget
+        $this->loader->add_action( 'widgets_init', $plugin_admin, 'vcs_register_widget' );
 
 	}
 
